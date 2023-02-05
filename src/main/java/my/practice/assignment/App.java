@@ -1,5 +1,6 @@
 package my.practice.assignment;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -8,6 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Locale;
+
+/**
+ * Program for outputting strings in XML or Json format to logger (depending on the received argument)
+ * with the message: "Привіт <username>!"
+ * Where username is the username from the config.properties file
+ */
 
 public class App {
     public static final String PATH_PROPERTIES = "config.properties";
@@ -48,45 +55,22 @@ public class App {
      * @return Message : "Привіт <username>!
      */
     private static String getMessage(String arg, String username) {
-        return arg.toLowerCase(Locale.ROOT).equals("xml") ? getXmlMessage(username) : getJsonMessage(username);
-    }
-
-    /**
-     * Creates a JSON string with the given username
-     *
-     * @param username name from properties
-     * @return Json format string
-     */
-    private static String getJsonMessage(String username) {
-        logger.warn("Create a string in Json format with a message");
-        ObjectMapper mapper = new ObjectMapper();
+        String format = arg.toLowerCase(Locale.ROOT).equals("xml")?"xml":"Json";
+        logger.warn("Create a string in {} format with a message",format);
+        ObjectMapper mapper = format.equals("xml")?new XmlMapper():new ObjectMapper();
         String message = "";
         try {
             message = mapper.writeValueAsString(new Message(username));
         } catch (JsonProcessingException e) {
-            logger.error("Json string could not be created: {}", e.getMessage(), e);
+            logger.error("The string could not be created: {}", e.getMessage(), e);
         }
         return message;
     }
 
     /**
-     * Creates a Xml string with the given username
-     *
-     * @param username name from properties
-     * @return Xml format string
+     * Sets path to logback.configurationFile and gets logger from LoggerFactory
+     * @return an object of type Logger
      */
-    private static String getXmlMessage(String username) {
-        logger.warn("Create a string in Xml format with a message");
-        XmlMapper xmlMapper = new XmlMapper();
-        String message = "";
-        try {
-            message = xmlMapper.writeValueAsString(new Message(username));
-        } catch (JsonProcessingException e) {
-            logger.error("Xml string could not be created: {}", e.getMessage(), e);
-        }
-        return message;
-    }
-
     private static Logger getLoggerAndSetConfigPath() {
         System.setProperty("logback.configurationFile", PATH_LOGGER);
         Logger logger = LoggerFactory.getLogger(App.class);
@@ -97,6 +81,7 @@ public class App {
     /**
      * The object to serialize that creates a message "Привіт <name user>!"
      */
+    @JsonRootName("")
     private static class Message {
         String message;
 
