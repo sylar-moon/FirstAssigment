@@ -26,6 +26,7 @@ public class App {
         String message = getMessage(arg, getUsername());
         logger.trace("Message output");
         logger.error(message);
+        logger.info("End program");
     }
 
     /**
